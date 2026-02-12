@@ -1,0 +1,101 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma Crowdfunding Inmobiliario</title>
+  <link rel="stylesheet" href="styless.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="theme-icon">🌙</span>
+    </button>
+
+    <!-- Investment Project Card -->
+    <div class="card" id="businessCard">
+
+      <!-- Header Section -->
+      <div class="card-header">
+        <div class="avatar">
+          <img src="https://via.placeholder.com/150" alt="Proyecto Inmobiliario" id="projectImg">
+        </div>
+        <div class="header-info">
+          <h1 id="projectName">Cargando Proyecto...</h1>
+          <p class="title" id="projectType">Tipo de Propiedad</p>
+          <p class="location" id="projectLocation">📍 Ubicación</p>
+        </div>
+      </div>
+
+      <!-- Project Description -->
+      <div class="card-section">
+        <h2>Descripción del Proyecto</h2>
+        <p id="projectDescription" class="bio">
+          Cargando descripción...
+        </p>
+      </div>
+
+      <!-- Investment Details -->
+      <div class="card-section">
+        <h2>Detalles de Inversión</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="icon">💰</span>
+            <span id="minimumInvestment">Inversión mínima</span>
+          </div>
+          <div class="contact-item">
+            <span class="icon">📈</span>
+            <span id="expectedReturn">Retorno esperado</span>
+          </div>
+          <div class="contact-item">
+            <span class="icon">⏳</span>
+            <span id="investmentTerm">Plazo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Investment Progress -->
+      <div class="card-section">
+        <h2>Progreso de Financiación</h2>
+        <div id="fundingProgress" class="skills-list">
+          Cargando progreso...
+        </div>
+        <button id="investBtn" class="btn btn-secondary">Invertir Ahora</button>
+      </div>
+
+      <!-- Investors Section -->
+      <div class="card-section">
+        <h2>Inversionistas</h2>
+        <div id="investorsList" class="social-links">
+          Cargando inversionistas...
+        </div>
+      </div>
+
+      <!-- Statistics Section -->
+      <div class="card-section">
+        <h2>Estadísticas del Proyecto</h2>
+        <div id="stats" class="stats-grid">
+          Cargando estadísticas...
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Construido con ❤️ usando ES2023 JavaScript</p>
+      <p class="small">Proyecto Plataforma Crowdfunding Inmobiliario</p>
+    </footer>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">
+    <span id="toastMessage"></span>
+  </div>
+
+  <script src="starte/index.js"></script>
+</body>
+</html>
