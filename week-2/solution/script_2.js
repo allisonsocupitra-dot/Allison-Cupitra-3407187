@@ -1,338 +1,672 @@
-/* ============================================
-   PLATAFORMA CROWDFUNDING INMOBILIARIO
-   ============================================ */
+/**
+ * ============================================
+ * PROYECTO SEMANA 02 - GESTOR DE PROYECTOS INMOBILIARIOS
+ * Crowdfunding Inmobiliario - PropFund
+ * ============================================
+ *
+ * Este archivo maneja toda la logica de la aplicacion
+ * Aprendi que hay que separar la logica del HTML, asi que lo hice
+ * Trate de usar todo lo que vimos esta semana en clase
+ *
+ * ============================================
+ */
 
 // ============================================
 // ESTADO GLOBAL
 // ============================================
 
+// Aqui voy a guardar todos los proyectos que cree el usuario
 let items = [];
+
+// Esto lo uso para saber si estoy editando un proyecto o creando uno nuevo
+// Si es null significa que es nuevo
 let editingItemId = null;
 
 // ============================================
-// CATEGORÍAS (Tipo de inmueble)
+// CATEGORIAS Y PRIORIDADES DE MI DOMINIO
 // ============================================
 
+// Defini las categorias de proyectos inmobiliarios
+// Cada una tiene un nombre y un emoji para que se vea bonito en pantalla
 const CATEGORIES = {
-  residencial: { name: 'Residencial', emoji: '🏠' },
-  comercial: { name: 'Comercial', emoji: '🏢' },
-  industrial: { name: 'Industrial', emoji: '🏭' },
-  mixto: { name: 'Uso Mixto', emoji: '🏘️' },
+  residential: { name: 'Residencial', emoji: '🏠' },
+  commercial:  { name: 'Comercial',   emoji: '🏢' },
+  land:        { name: 'Lote / Tierra', emoji: '🌿' },
+  industrial:  { name: 'Industrial',  emoji: '🏭' },
+  mixed:       { name: 'Uso Mixto',   emoji: '🏙️' },
+  other:       { name: 'Otro',        emoji: '📌' },
 };
 
+// Los niveles de riesgo del proyecto (antes se llamaban prioridades en la plantilla)
+// Baje, medio y alto - igual que en bolsa de valores jeje
 const PRIORITIES = {
-  high: { name: 'Alto Riesgo', color: '#dc2626' },
-  medium: { name: 'Riesgo Medio', color: '#f59e0b' },
-  low: { name: 'Bajo Riesgo', color: '#16a34a' },
+  high:   { name: 'Alto',  color: '#ef4444' },
+  medium: { name: 'Medio', color: '#f59e0b' },
+  low:    { name: 'Bajo',  color: '#22c55e' },
 };
 
 // ============================================
-// PERSISTENCIA
+// PERSISTENCIA - LocalStorage
 // ============================================
 
-const loadItems = () =>
-  JSON.parse(localStorage.getItem('realEstateProjects') ?? '[]');
+/**
+ * Carga los proyectos que habia guardado antes
+ * Si no hay nada guardado retorna un array vacio
+ */
+const loadItems = () => {
+  // Intento leer lo que habia guardado en el navegador
+  // Si no hay nada guardado JSON.parse de null falla, por eso uso ?? '[]'
+  return JSON.parse(localStorage.getItem('propfundProjects') ?? '[]');
+};
 
-const saveItems = itemsToSave =>
-  localStorage.setItem('realEstateProjects', JSON.stringify(itemsToSave));
+/**
+ * Guarda todos los proyectos en el navegador
+ * @param {Array} itemsToSave - el array con todos los proyectos
+ */
+const saveItems = itemsToSave => {
+  // Convierto el array a texto para poder guardarlo
+  localStorage.setItem('propfundProjects', JSON.stringify(itemsToSave));
+};
 
 // ============================================
-// UTILIDAD: calcular porcentaje financiación
+// CRUD - CREAR PROYECTO
 // ============================================
 
-const calculateProgress = (goal = 0, raised = 0) =>
-  goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
-
-// ============================================
-// CRUD - CREAR
-// ============================================
-
+/**
+ * Crea un proyecto nuevo y lo agrega al array
+ * @param {Object} itemData - los datos que lleno el usuario en el formulario
+ * @returns {Array} el array nuevo con el proyecto incluido
+ */
 const createItem = (itemData = {}) => {
-  const {
-    name = '',
-    description = '',
-    category = 'residencial',
-    priority = 'medium',
-    investmentGoal = 0,
-    amountRaised = 0,
-    deadline = ''
-  } = itemData;
-
-  const progress = calculateProgress(investmentGoal, amountRaised);
-
+  // Creo el objeto del proyecto con todos sus campos
+  // Uso spread para no modificar el itemData original
   const newItem = {
-    id: Date.now(),
-    name,
-    description,
-    category,
-    priority,
-    investmentGoal: Number(investmentGoal),
-    amountRaised: Number(amountRaised),
-    progress,
-    active: progress < 100,
-    deadline,
-    createdAt: new Date().toISOString(),
-    updatedAt: null
+    id:          Date.now(),                    // uso la fecha como id unico
+    name:        itemData.name        ?? '',
+    description: itemData.description ?? '',
+    category:    itemData.category    ?? 'residential',
+    priority:    itemData.priority    ?? 'medium',
+    meta:        itemData.meta        ?? 0,     // meta de financiacion en dolares
+    recaudado:   itemData.recaudado   ?? 0,     // cuanto han invertido hasta ahora
+    tir:         itemData.tir         ?? '',    // tasa interna de retorno estimada
+    active:      true,                          // todos los proyectos empiezan activos
+    createdAt:   new Date().toISOString(),
+    updatedAt:   null,
   };
 
+  // Creo un array nuevo con el proyecto nuevo al final
+  // Uso spread para no mutar el array original (lo aprendi en clase)
   const newItems = [...items, newItem];
   saveItems(newItems);
   return newItems;
 };
 
 // ============================================
-// CRUD - ACTUALIZAR
+// CRUD - ACTUALIZAR PROYECTO
 // ============================================
 
+/**
+ * Actualiza los datos de un proyecto que ya existe
+ * @param {Number} id - el id del proyecto que quiero editar
+ * @param {Object} updates - los campos nuevos que quiero cambiar
+ * @returns {Array} el array con el proyecto ya actualizado
+ */
 const updateItem = (id, updates) => {
-  const updatedItems = items.map(item => {
-    if (item.id !== id) return item;
-
-    const updatedGoal = updates.investmentGoal ?? item.investmentGoal;
-    const updatedRaised = updates.amountRaised ?? item.amountRaised;
-    const progress = calculateProgress(updatedGoal, updatedRaised);
-
-    return {
-      ...item,
-      ...updates,
-      investmentGoal: Number(updatedGoal),
-      amountRaised: Number(updatedRaised),
-      progress,
-      active: progress < 100,
-      updatedAt: new Date().toISOString()
-    };
-  });
-
+  // Recorro todos los proyectos con map
+  // Si el id coincide lo actualizo, si no lo dejo igual
+  const updatedItems = items.map(item =>
+    item.id === id
+      ? { ...item, ...updates, updatedAt: new Date().toISOString() }
+      : item
+  );
   saveItems(updatedItems);
   return updatedItems;
 };
 
 // ============================================
-// CRUD - ELIMINAR
+// CRUD - ELIMINAR PROYECTO
 // ============================================
 
+/**
+ * Elimina un proyecto por su id
+ * @param {Number} id - el id del proyecto a eliminar
+ * @returns {Array} el array sin ese proyecto
+ */
 const deleteItem = id => {
-  const filtered = items.filter(item => item.id !== id);
-  saveItems(filtered);
-  return filtered;
+  // filter me devuelve un array nuevo sin el proyecto que quiero borrar
+  const filteredItems = items.filter(item => item.id !== id);
+  saveItems(filteredItems);
+  return filteredItems;
 };
 
 // ============================================
-// FILTROS
+// CRUD - TOGGLE ACTIVO / INACTIVO
 // ============================================
 
+/**
+ * Cambia el estado del proyecto entre activo e inactivo
+ * @param {Number} id - id del proyecto
+ * @returns {Array} array con el proyecto actualizado
+ */
+const toggleItemActive = id => {
+  const updatedItems = items.map(item =>
+    item.id === id
+      ? { ...item, active: !item.active, updatedAt: new Date().toISOString() }
+      : item
+  );
+  saveItems(updatedItems);
+  return updatedItems;
+};
+
+/**
+ * Elimina todos los proyectos que esten inactivos
+ * Util para limpiar los que ya no me sirven
+ * @returns {Array} solo los proyectos activos
+ */
+const clearInactive = () => {
+  const activeItems = items.filter(item => item.active);
+  saveItems(activeItems);
+  return activeItems;
+};
+
+// ============================================
+// FILTROS Y BUSQUEDA
+// ============================================
+
+/**
+ * Filtra por estado: todos, activos o inactivos
+ * @param {Array} itemsToFilter
+ * @param {String} status - 'all' | 'active' | 'inactive'
+ * @returns {Array}
+ */
 const filterByStatus = (itemsToFilter, status = 'all') => {
-  if (status === 'all') return itemsToFilter;
-  if (status === 'active') return itemsToFilter.filter(i => i.active);
-  if (status === 'funded') return itemsToFilter.filter(i => !i.active);
+  if (status === 'all')      return itemsToFilter;
+  if (status === 'active')   return itemsToFilter.filter(item => item.active);
+  if (status === 'inactive') return itemsToFilter.filter(item => !item.active);
   return itemsToFilter;
 };
 
-const filterByCategory = (itemsToFilter, category = 'all') =>
-  category === 'all'
-    ? itemsToFilter
-    : itemsToFilter.filter(i => i.category === category);
+/**
+ * Filtra por tipo de inmueble
+ * @param {Array} itemsToFilter
+ * @param {String} category - 'all' o el nombre de la categoria
+ * @returns {Array}
+ */
+const filterByCategory = (itemsToFilter, category = 'all') => {
+  if (category === 'all') return itemsToFilter;
+  return itemsToFilter.filter(item => item.category === category);
+};
 
-const filterByPriority = (itemsToFilter, priority = 'all') =>
-  priority === 'all'
-    ? itemsToFilter
-    : itemsToFilter.filter(i => i.priority === priority);
+/**
+ * Filtra por nivel de riesgo
+ * @param {Array} itemsToFilter
+ * @param {String} priority - 'all' | 'high' | 'medium' | 'low'
+ * @returns {Array}
+ */
+const filterByPriority = (itemsToFilter, priority = 'all') => {
+  if (priority === 'all') return itemsToFilter;
+  return itemsToFilter.filter(item => item.priority === priority);
+};
 
-const searchItems = (itemsToFilter, query = '') => {
-  if (!query.trim()) return itemsToFilter;
-  const term = query.toLowerCase();
+/**
+ * Busca proyectos por texto en nombre o descripcion
+ * @param {Array} itemsToFilter
+ * @param {String} query - texto que escribio el usuario
+ * @returns {Array}
+ */
+const searchItems = (itemsToFilter, query) => {
+  // Si el campo de busqueda esta vacio devuelvo todo
+  if (!query || query.trim() === '') return itemsToFilter;
+
+  const searchTerm = query.toLowerCase();
+
   return itemsToFilter.filter(item =>
-    item.name.toLowerCase().includes(term) ||
-    item.description.toLowerCase().includes(term)
+    item.name.toLowerCase().includes(searchTerm) ||
+    (item.description ?? '').toLowerCase().includes(searchTerm)
   );
 };
 
+/**
+ * Aplica todos los filtros juntos de una vez
+ * @param {Array} itemsToFilter
+ * @param {Object} filters - objeto con todos los filtros activos
+ * @returns {Array}
+ */
 const applyFilters = (itemsToFilter, filters = {}) => {
+  // Saco cada filtro del objeto con destructuring
+  // Si no viene algun filtro uso 'all' o '' por defecto
   const {
-    status = 'all',
+    status   = 'all',
     category = 'all',
     priority = 'all',
-    search = ''
+    search   = '',
   } = filters;
 
+  // Encadeno los filtros uno por uno
   let result = filterByStatus(itemsToFilter, status);
   result = filterByCategory(result, category);
   result = filterByPriority(result, priority);
   result = searchItems(result, search);
-
   return result;
 };
 
 // ============================================
-// ESTADÍSTICAS
+// ESTADISTICAS
 // ============================================
 
+/**
+ * Calcula estadisticas de toda la cartera de proyectos
+ * @param {Array} itemsToAnalyze
+ * @returns {Object} objeto con los numeros importantes
+ */
 const getStats = (itemsToAnalyze = []) => {
-  const total = itemsToAnalyze.length;
-  const active = itemsToAnalyze.filter(i => i.active).length;
-  const funded = total - active;
+  const total    = itemsToAnalyze.length;
+  const active   = itemsToAnalyze.filter(item => item.active).length;
+  const inactive = total - active;
 
-  const totalInvestment = itemsToAnalyze.reduce(
-    (acc, item) => acc + item.amountRaised,
-    0
-  );
+  // Cuanto dinero se ha recaudado en total entre todos los proyectos
+  const totalRecaudado = itemsToAnalyze.reduce((acc, item) => {
+    return acc + (Number(item.recaudado) || 0);
+  }, 0);
 
-  return { total, active, funded, totalInvestment };
+  // Cuanto es la meta total sumando todos los proyectos
+  const totalMeta = itemsToAnalyze.reduce((acc, item) => {
+    return acc + (Number(item.meta) || 0);
+  }, 0);
+
+  // Cuantos proyectos hay por cada tipo de inmueble
+  const byCategory = itemsToAnalyze.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  // Cuantos proyectos hay por nivel de riesgo
+  const byPriority = itemsToAnalyze.reduce((acc, item) => {
+    acc[item.priority] = (acc[item.priority] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return { total, active, inactive, totalRecaudado, totalMeta, byCategory, byPriority };
 };
 
 // ============================================
-// RENDER
+// RENDERIZADO - HELPERS
 // ============================================
 
+/**
+ * Devuelve el emoji de una categoria
+ * @param {String} category
+ * @returns {String}
+ */
+const getCategoryEmoji = category => {
+  return CATEGORIES[category]?.emoji ?? '📌';
+};
+
+/**
+ * Convierte una fecha ISO a algo legible en español
+ * @param {String} dateString
+ * @returns {String}
+ */
+const formatDate = dateString => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES', {
+    day:   '2-digit',
+    month: 'short',
+    year:  'numeric',
+  });
+};
+
+/**
+ * Formatea un numero como moneda en dolares
+ * @param {Number} number
+ * @returns {String}
+ */
+const formatMoney = number => {
+  // Si no hay numero devuelvo un guion
+  if (!number && number !== 0) return '—';
+  return '$' + Number(number).toLocaleString('en-US');
+};
+
+// ============================================
+// RENDERIZADO - PROYECTO INDIVIDUAL
+// ============================================
+
+/**
+ * Convierte un proyecto en HTML para mostrarlo en pantalla
+ * @param {Object} item - el proyecto
+ * @returns {String} el HTML del proyecto
+ */
 const renderItem = item => {
-  const {
-    id,
-    name,
-    description,
-    category,
-    priority,
-    investmentGoal,
-    amountRaised,
-    progress
-  } = item;
+  // Saco las propiedades que necesito con destructuring
+  const { id, name, description, category, priority, active,
+          createdAt, meta, recaudado, tir } = item;
 
+  // Calculo el porcentaje de financiacion para la barra de progreso
+  const porcentaje = meta ? Math.min(100, Math.round((recaudado / meta) * 100)) : 0;
+
+  // Armo el HTML del proyecto con template literals
   return `
-    <div class="project-item risk-${priority}" data-item-id="${id}">
-      <h3>${CATEGORIES[category]?.emoji} ${name}</h3>
-      <p>${description ?? ''}</p>
+    <div class="item-card ${active ? '' : 'inactive'} priority-${priority}" data-item-id="${id}">
 
-      <div class="progress-container">
-        <div class="progress-bar" style="width:${progress}%"></div>
+      <div class="item-content">
+        <h3 class="item-content">${name}</h3>
+
+        ${description ? `<p>${description}</p>` : ''}
+
+        <div class="item-meta">
+          <span class="item-badge badge-category">
+            ${getCategoryEmoji(category)} ${CATEGORIES[category]?.name ?? category}
+          </span>
+          <span class="item-badge badge-priority priority-${priority}">
+            ⚠️ Riesgo ${PRIORITIES[priority]?.name ?? priority}
+          </span>
+          <span class="badge-status ${active ? 'active' : 'inactive'}">
+            ${active ? '✅ Activo' : '⏸️ Inactivo'}
+          </span>
+          ${tir ? `<span class="item-badge" style="background:#d1fae5;color:#065f46">📈 TIR ${tir}%</span>` : ''}
+        </div>
+
+        ${meta ? `
+        <div class="funding-info">
+          <div class="funding-labels">
+            <span>Recaudado: ${formatMoney(recaudado)}</span>
+            <span>Meta: ${formatMoney(meta)} · ${porcentaje}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${porcentaje}%"></div>
+          </div>
+        </div>` : ''}
+
+        <span class="item-date">📅 Creado el ${formatDate(createdAt)}</span>
       </div>
 
-      <div class="progress-text">
-        💰 $${amountRaised.toLocaleString()} / $${investmentGoal.toLocaleString()} 
-        (${progress.toFixed(1)}%)
+      <div class="item-actions">
+        <button class="btn-edit"   title="Editar proyecto">✏️</button>
+        <button class="btn-delete" title="Eliminar proyecto">🗑️</button>
       </div>
 
-      <div class="task-actions">
-        <button class="btn-edit">✏️</button>
-        <button class="btn-delete">🗑️</button>
-      </div>
     </div>
   `;
 };
 
-const renderItems = itemsToRender => {
-  const list = document.getElementById('item-list');
-  const empty = document.getElementById('empty-state');
+// ============================================
+// RENDERIZADO - LISTA COMPLETA
+// ============================================
 
-  if (!itemsToRender.length) {
-    list.innerHTML = '';
-    empty.classList.add('show');
+/**
+ * Pinta todos los proyectos en el HTML
+ * @param {Array} itemsToRender
+ */
+const renderItems = itemsToRender => {
+  const itemList   = document.getElementById('item-list');
+  const emptyState = document.getElementById('empty-state');
+
+  if (itemsToRender.length === 0) {
+    // Si no hay proyectos muestro el mensaje vacio
+    itemList.innerHTML = '';
+    emptyState.style.display = 'block';
   } else {
-    empty.classList.remove('show');
-    list.innerHTML = itemsToRender.map(renderItem).join('');
+    // Convierto cada proyecto en HTML y los uno en un solo string
+    emptyState.style.display = 'none';
+    itemList.innerHTML = itemsToRender.map(renderItem).join('');
   }
 };
 
+/**
+ * Actualiza los numeros de estadisticas en el HTML
+ * @param {Object} stats
+ */
 const renderStats = stats => {
-  document.getElementById('stat-total').textContent = stats.total;
-  document.getElementById('stat-active').textContent = stats.active;
-  document.getElementById('stat-funded').textContent = stats.funded;
+  // Actualizo el header con los totales
+  document.getElementById('stat-total').textContent    = stats.total;
+  document.getElementById('stat-active').textContent   = stats.active;
+  document.getElementById('stat-inactive').textContent = stats.inactive;
 
-  document.getElementById('stats-details').innerHTML = `
+  // Armo las tarjetas de estadisticas por categoria y riesgo
+  const categoryCards = Object.entries(stats.byCategory)
+    .map(([cat, count]) => `
+      <div class="stat-card">
+        <h4>${getCategoryEmoji(cat)} ${CATEGORIES[cat]?.name ?? cat}</h4>
+        <p>${count}</p>
+      </div>
+    `).join('');
+
+  const priorityCards = Object.entries(stats.byPriority)
+    .map(([pri, count]) => `
+      <div class="stat-card">
+        <h4>Riesgo ${PRIORITIES[pri]?.name ?? pri}</h4>
+        <p>${count}</p>
+      </div>
+    `).join('');
+
+  // Tarjetas de dinero
+  const moneyCards = `
     <div class="stat-card">
-      <h4>Total Invertido</h4>
-      <p>$${stats.totalInvestment.toLocaleString()}</p>
+      <h4>💰 Total Recaudado</h4>
+      <p style="font-size:1.3rem">${formatMoney(stats.totalRecaudado)}</p>
+    </div>
+    <div class="stat-card">
+      <h4>🎯 Meta Total</h4>
+      <p style="font-size:1.3rem">${formatMoney(stats.totalMeta)}</p>
     </div>
   `;
+
+  document.getElementById('stats-details').innerHTML = moneyCards + categoryCards + priorityCards;
 };
 
 // ============================================
-// EVENTOS
+// EVENT HANDLERS
 // ============================================
 
+/**
+ * Se ejecuta cuando el usuario envia el formulario
+ * Puede ser para crear un proyecto nuevo o para editar uno
+ * @param {Event} e
+ */
 const handleFormSubmit = e => {
+  // Evito que la pagina se recargue sola
   e.preventDefault();
 
-  const name = document.getElementById('item-name').value.trim();
-  if (!name) return alert('El nombre es obligatorio');
+  // Leo todos los campos del formulario
+  const name        = document.getElementById('item-name').value.trim();
+  const description = document.getElementById('item-description').value.trim();
+  const category    = document.getElementById('item-category').value;
+  const priority    = document.getElementById('item-priority').value;
+  const meta        = document.getElementById('item-meta').value;
+  const recaudado   = document.getElementById('item-recaudado').value;
+  const tir         = document.getElementById('item-tir').value;
 
-  const itemData = {
-    name,
-    description: document.getElementById('item-description').value,
-    category: document.getElementById('item-category').value,
-    priority: document.getElementById('item-priority').value,
-    investmentGoal: document.getElementById('investment-goal').value,
-    amountRaised: document.getElementById('amount-raised').value,
-    deadline: document.getElementById('deadline').value
-  };
+  // El nombre es obligatorio, sin eso no puedo guardar
+  if (!name) {
+    alert('El nombre del proyecto es obligatorio 😅');
+    return;
+  }
 
-  items = editingItemId
-    ? updateItem(editingItemId, itemData)
-    : createItem(itemData);
+  // Junto todos los datos en un objeto
+  const itemData = { name, description, category, priority, meta, recaudado, tir };
 
+  // Si hay un id en edicion actualizo, si no creo uno nuevo
+  if (editingItemId) {
+    items = updateItem(editingItemId, itemData);
+  } else {
+    items = createItem(itemData);
+  }
+
+  // Limpio el formulario y actualizo lo que se ve en pantalla
   resetForm();
   renderItems(applyCurrentFilters());
   renderStats(getStats(items));
 };
 
-const handleItemDelete = id => {
-  if (!confirm('¿Eliminar este proyecto?')) return;
-  items = deleteItem(id);
+/**
+ * Cambia un proyecto entre activo e inactivo
+ * @param {Number} itemId
+ */
+const handleItemToggle = itemId => {
+  items = toggleItemActive(itemId);
   renderItems(applyCurrentFilters());
   renderStats(getStats(items));
 };
 
-const getCurrentFilters = () => ({
-  status: document.getElementById('filter-status').value,
-  category: document.getElementById('filter-category').value,
-  priority: document.getElementById('filter-priority').value,
-  search: document.getElementById('search-input').value
-});
+/**
+ * Rellena el formulario con los datos del proyecto para editarlo
+ * @param {Number} itemId
+ */
+const handleItemEdit = itemId => {
+  // Busco el proyecto por su id
+  const itemToEdit = items.find(item => item.id === itemId);
+  if (!itemToEdit) return;
 
-const applyCurrentFilters = () =>
-  applyFilters(items, getCurrentFilters());
+  // Relleno cada campo del formulario con los datos que tenia
+  document.getElementById('item-name').value        = itemToEdit.name;
+  document.getElementById('item-description').value = itemToEdit.description ?? '';
+  document.getElementById('item-category').value    = itemToEdit.category;
+  document.getElementById('item-priority').value    = itemToEdit.priority;
+  document.getElementById('item-meta').value        = itemToEdit.meta        ?? '';
+  document.getElementById('item-recaudado').value   = itemToEdit.recaudado   ?? '';
+  document.getElementById('item-tir').value         = itemToEdit.tir         ?? '';
 
+  // Cambio el titulo y los botones del formulario para que se note que estoy editando
+  document.getElementById('form-title').textContent         = '✏️ Editar Proyecto';
+  document.getElementById('submit-btn').textContent         = 'Guardar Cambios';
+  document.getElementById('cancel-btn').style.display       = 'inline-block';
+
+  // Guardo el id del proyecto que estoy editando
+  editingItemId = itemId;
+
+  // Subo la pagina para que el usuario vea el formulario
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+/**
+ * Elimina un proyecto despues de pedir confirmacion
+ * @param {Number} itemId
+ */
+const handleItemDelete = itemId => {
+  if (!confirm('¿Seguro que quieres eliminar este proyecto? No se puede deshacer.')) return;
+  items = deleteItem(itemId);
+  renderItems(applyCurrentFilters());
+  renderStats(getStats(items));
+};
+
+// ============================================
+// FILTROS - HELPERS
+// ============================================
+
+/**
+ * Lee los valores actuales de todos los filtros del HTML
+ * @returns {Object}
+ */
+const getCurrentFilters = () => {
+  return {
+    status:   document.getElementById('filter-status').value,
+    category: document.getElementById('filter-category').value,
+    priority: document.getElementById('filter-priority').value,
+    search:   document.getElementById('search-input').value,
+  };
+};
+
+/**
+ * Aplica los filtros que estan activos ahora mismo
+ * @returns {Array}
+ */
+const applyCurrentFilters = () => {
+  const filters = getCurrentFilters();
+  return applyFilters(items, filters);
+};
+
+/**
+ * Se ejecuta cada vez que el usuario cambia un filtro
+ */
+const handleFilterChange = () => {
+  const filteredItems = applyCurrentFilters();
+  renderItems(filteredItems);
+};
+
+// ============================================
+// RESET DEL FORMULARIO
+// ============================================
+
+/**
+ * Deja el formulario como si fuera la primera vez
+ */
 const resetForm = () => {
   document.getElementById('item-form').reset();
+  document.getElementById('form-title').textContent   = '➕ Nuevo Proyecto';
+  document.getElementById('submit-btn').textContent   = 'Crear Proyecto';
+  document.getElementById('cancel-btn').style.display = 'none';
   editingItemId = null;
 };
 
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+/**
+ * Aqui conecto todos los botones y formularios con sus funciones
+ */
 const attachEventListeners = () => {
-  document.getElementById('item-form')
-    .addEventListener('submit', handleFormSubmit);
+  // Formulario - cuando el usuario da click en crear o guardar
+  document.getElementById('item-form').addEventListener('submit', handleFormSubmit);
 
-  document.getElementById('item-list')
-    .addEventListener('click', e => {
-      const card = e.target.closest('.project-item');
-      if (!card) return;
-      const id = Number(card.dataset.itemId);
+  // Boton cancelar - deja el formulario limpio
+  document.getElementById('cancel-btn').addEventListener('click', resetForm);
 
-      if (e.target.classList.contains('btn-delete'))
-        handleItemDelete(id);
-    });
+  // Filtros - cada vez que cambia algo vuelvo a filtrar
+  document.getElementById('filter-status').addEventListener('change', handleFilterChange);
+  document.getElementById('filter-category').addEventListener('change', handleFilterChange);
+  document.getElementById('filter-priority').addEventListener('change', handleFilterChange);
 
-  ['filter-status','filter-category','filter-priority']
-    .forEach(id =>
-      document.getElementById(id)
-        .addEventListener('change', () =>
-          renderItems(applyCurrentFilters())
-        )
-    );
+  // La busqueda filtra mientras el usuario escribe
+  document.getElementById('search-input').addEventListener('input', handleFilterChange);
 
-  document.getElementById('search-input')
-    .addEventListener('input', () =>
-      renderItems(applyCurrentFilters())
-    );
+  // Boton para eliminar todos los inactivos de una vez
+  document.getElementById('clear-inactive').addEventListener('click', () => {
+    if (!confirm('¿Eliminar todos los proyectos inactivos?')) return;
+    items = clearInactive();
+    renderItems(applyCurrentFilters());
+    renderStats(getStats(items));
+  });
+
+  // Event delegation - en vez de poner un listener en cada tarjeta
+  // pongo uno solo en la lista y detecto en cual tarjeta se hizo click
+  document.getElementById('item-list').addEventListener('click', e => {
+    // Busco el elemento padre que tenga el data-item-id
+    const itemElement = e.target.closest('[data-item-id]');
+    if (!itemElement) return;
+
+    // El id viene como string del HTML, lo convierto a numero
+    const itemId = parseInt(itemElement.dataset.itemId);
+
+    if (e.target.classList.contains('btn-edit')) {
+      handleItemEdit(itemId);
+    } else if (e.target.classList.contains('btn-delete')) {
+      handleItemDelete(itemId);
+    }
+  });
 };
 
 // ============================================
-// INIT
+// INICIALIZACION
 // ============================================
 
+/**
+ * Arranca la aplicacion cuando el HTML ya esta listo
+ */
 const init = () => {
+  // Cargo lo que habia guardado antes en el navegador
   items = loadItems();
+
+  // Muestro los proyectos y las estadisticas
   renderItems(items);
   renderStats(getStats(items));
+
+  // Conecto todos los botones
   attachEventListeners();
-  console.log('🏢 Plataforma Crowdfunding lista');
+
+  console.log('✅ PropFund inicializado correctamente');
+  console.log(`📦 Se cargaron ${items.length} proyectos desde localStorage`);
 };
 
+// Espero a que el HTML cargue completamente antes de arrancar
 document.addEventListener('DOMContentLoaded', init);
