@@ -1,0 +1,305 @@
+/* ===================================
+   Variables CSS - Crowdfunding Inmobiliario
+   =================================== */
+
+:root {
+  --color-primary: #1e3a8a;      /* Azul corporativo */
+  --color-secondary: #2563eb;
+  --color-success: #16a34a;      /* Verde inversión */
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-dark: #111827;
+  --color-gray: #6b7280;
+  --color-light: #f3f4f6;
+  --color-white: #ffffff;
+
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 6px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 20px rgba(0,0,0,0.1);
+
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  color: var(--color-dark);
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* ===================================
+   Header
+   =================================== */
+
+.header {
+  background: var(--color-white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--color-gray);
+  margin-bottom: 1rem;
+}
+
+.stats-summary {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat strong {
+  color: var(--color-success);
+  font-size: 1.2rem;
+}
+
+/* ===================================
+   Formulario Proyecto
+   =================================== */
+
+.form-section {
+  background: var(--color-white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+}
+
+.form-section h2 {
+  margin-bottom: 1.5rem;
+  color: var(--color-primary);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.7rem;
+  border: 2px solid var(--color-light);
+  border-radius: var(--radius-md);
+  transition: 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--color-secondary);
+  outline: none;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+/* ===================================
+   Botones
+   =================================== */
+
+.btn {
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-secondary);
+}
+
+.btn-secondary {
+  background: var(--color-gray);
+  color: white;
+}
+
+/* ===================================
+   Lista de Proyectos
+   =================================== */
+
+.items-section {
+  background: var(--color-white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+}
+
+.items-header {
+  margin-bottom: 1.5rem;
+}
+
+.project-item {
+  background: var(--color-light);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: 0.2s;
+}
+
+.project-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.project-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.project-meta {
+  font-size: 0.9rem;
+  color: var(--color-gray);
+  margin-bottom: 1rem;
+}
+
+/* ===================================
+   Barra de Progreso de Inversión
+   =================================== */
+
+.progress-bar {
+  background: #e5e7eb;
+  border-radius: 50px;
+  overflow: hidden;
+  height: 12px;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-success);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: var(--color-gray);
+}
+
+/* ===================================
+   Estados del Proyecto
+   =================================== */
+
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-funded {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-completed {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* ===================================
+   Estadísticas
+   =================================== */
+
+.detailed-stats {
+  background: var(--color-white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--color-light);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.stat-card h4 {
+  font-size: 0.9rem;
+  color: var(--color-gray);
+  margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+/* ===================================
+   Responsive
+   =================================== */
+
+@media (max-width: 768px) {
+  .stats-summary {
+    gap: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
