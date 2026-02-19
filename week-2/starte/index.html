@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plataforma de Crowdfunding Inmobiliario</title>
+  <title>Plataforma de Crowdfunding Inmobiliario | Gestión de Proyectos</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -13,116 +13,158 @@
     <header class="header">
       <h1>🏢 Plataforma de Crowdfunding Inmobiliario</h1>
       <p class="subtitle">Gestión de Proyectos de Inversión</p>
-      <div class="stats-summary">
+      <div class="stats-summary" id="stats-summary">
         <span class="stat">Total Proyectos: <strong id="stat-total">0</strong></span>
-        <span class="stat">Activos: <strong id="stat-active">0</strong></span>
-        <span class="stat">Finalizados: <strong id="stat-inactive">0</strong></span>
+        <span class="stat">Financiados: <strong id="stat-funded">0</strong></span>
+        <span class="stat">En Financiación: <strong id="stat-active">0</strong></span>
       </div>
     </header>
 
-    <!-- Formulario Proyecto -->
+    <!-- Project Form -->
     <section class="form-section">
       <h2 id="form-title">➕ Nuevo Proyecto Inmobiliario</h2>
       <form id="item-form" class="item-form">
+        <input type="hidden" id="item-id" value="">
 
         <div class="form-group">
           <label for="item-name">Nombre del Proyecto *</label>
-          <input type="text" id="item-name" placeholder="Ej: Torre Empresarial Centro" required>
+          <input
+            type="text"
+            id="item-name"
+            placeholder="Ej: Torre Residencial Sunset"
+            required
+          >
         </div>
 
         <div class="form-group">
           <label for="item-description">Descripción</label>
-          <textarea id="item-description" rows="3"
-            placeholder="Descripción del proyecto y su objetivo"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="item-location">Ubicación</label>
-          <input type="text" id="item-location" placeholder="Ciudad / País">
+          <textarea
+            id="item-description"
+            rows="3"
+            placeholder="Detalles del proyecto (ubicación, tipo de inmueble, etc.)"
+          ></textarea>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="item-category">Tipo de Proyecto</label>
+            <label for="item-category">Tipo de Inmueble</label>
             <select id="item-category">
               <option value="residencial">🏠 Residencial</option>
               <option value="comercial">🏢 Comercial</option>
               <option value="industrial">🏭 Industrial</option>
-              <option value="turistico">🏖️ Turístico</option>
+              <option value="mixto">🏘️ Uso Mixto</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="item-status">Estado</label>
-            <select id="item-status">
-              <option value="active">🟢 Activo</option>
-              <option value="funded">💰 Financiado</option>
-              <option value="completed">✅ Finalizado</option>
+            <label for="item-priority">Nivel de Riesgo</label>
+            <select id="item-priority">
+              <option value="low">🟢 Bajo</option>
+              <option value="medium" selected>🟡 Medio</option>
+              <option value="high">🔴 Alto</option>
             </select>
           </div>
         </div>
 
+        <!-- Campos específicos del dominio -->
         <div class="form-row">
           <div class="form-group">
-            <label for="item-goal">Meta de Inversión ($)</label>
-            <input type="number" id="item-goal" placeholder="Ej: 500000">
+            <label for="investment-goal">Meta de Inversión ($)</label>
+            <input type="number" id="investment-goal" placeholder="Ej: 500000">
           </div>
 
           <div class="form-group">
-            <label for="item-raised">Monto Recaudado ($)</label>
-            <input type="number" id="item-raised" placeholder="Ej: 150000">
+            <label for="amount-raised">Monto Recaudado ($)</label>
+            <input type="number" id="amount-raised" placeholder="Ej: 150000">
           </div>
         </div>
 
         <div class="form-group">
-          <label for="item-roi">ROI Estimado (%)</label>
-          <input type="number" id="item-roi" step="0.1" placeholder="Ej: 12.5">
+          <label for="deadline">Fecha Límite de Financiación</label>
+          <input type="date" id="deadline">
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Crear Proyecto</button>
-          <button type="button" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            Crear Proyecto
+          </button>
+          <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">
+            Cancelar
+          </button>
         </div>
       </form>
     </section>
 
-    <!-- Filtros -->
+    <!-- Filters & Search -->
     <section class="filters-section">
-    <h2 class="filters-title">🔎 Filtrar Proyectos</h2>
-
-    <div class="filters-container">
-
+      <div class="filters">
         <div class="filter-group">
-        <label for="filter-status">Estado</label>
-        <select id="filter-status">
+          <label for="filter-status">Estado:</label>
+          <select id="filter-status">
             <option value="all">Todos</option>
-            <option value="active">Activos</option>
+            <option value="active">En Financiación</option>
             <option value="funded">Financiados</option>
-            <option value="completed">Finalizados</option>
-        </select>
+            <option value="closed">Cerrados</option>
+          </select>
         </div>
 
         <div class="filter-group">
-        <label for="filter-category">Tipo</label>
-        <select id="filter-category">
+          <label for="filter-category">Tipo:</label>
+          <select id="filter-category">
             <option value="all">Todos</option>
             <option value="residencial">Residencial</option>
             <option value="comercial">Comercial</option>
             <option value="industrial">Industrial</option>
-            <option value="turistico">Turístico</option>
-        </select>
+            <option value="mixto">Uso Mixto</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-priority">Riesgo:</label>
+          <select id="filter-priority">
+            <option value="all">Todos</option>
+            <option value="high">Alto</option>
+            <option value="medium">Medio</option>
+            <option value="low">Bajo</option>
+          </select>
         </div>
 
         <div class="filter-group search-group">
-        <label for="search-input">Buscar Proyecto</label>
-        <input 
-            type="text" 
-            id="search-input" 
+          <label for="search-input">Buscar:</label>
+          <input
+            type="text"
+            id="search-input"
             placeholder="Buscar proyectos..."
-        >
+          >
         </div>
+      </div>
+    </section>
 
-    </div>
+    <!-- Project List -->
+    <section class="items-section">
+      <div class="items-header">
+        <h2>📋 Lista de Proyectos</h2>
+        <button class="btn btn-outline" id="clear-inactive">
+          🗑️ Eliminar Proyectos Cerrados
+        </button>
+      </div>
+
+      <div id="item-list" class="item-list">
+        <!-- Se renderizan con JavaScript -->
+      </div>
+
+      <div id="empty-state" class="empty-state">
+        <p>📭 No hay proyectos registrados</p>
+        <p class="empty-state-hint">Agrega un nuevo proyecto usando el formulario</p>
+      </div>
+    </section>
+
+    <!-- Detailed Stats -->
+    <section class="detailed-stats">
+      <h3>📊 Estadísticas de Inversión</h3>
+      <div id="stats-details" class="stats-grid">
+        <!-- Se renderizan con JavaScript -->
+      </div>
     </section>
   </div>
 
