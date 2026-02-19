@@ -88,63 +88,44 @@
 
     <!-- Filtros -->
     <section class="filters-section">
-      <div class="filters">
+    <h2 class="filters-title">🔎 Filtrar Proyectos</h2>
+
+    <div class="filters-container">
 
         <div class="filter-group">
-          <label for="filter-status">Estado:</label>
-          <select id="filter-status">
+        <label for="filter-status">Estado</label>
+        <select id="filter-status">
             <option value="all">Todos</option>
             <option value="active">Activos</option>
             <option value="funded">Financiados</option>
             <option value="completed">Finalizados</option>
-          </select>
+        </select>
         </div>
 
         <div class="filter-group">
-          <label for="filter-category">Tipo:</label>
-          <select id="filter-category">
+        <label for="filter-category">Tipo</label>
+        <select id="filter-category">
             <option value="all">Todos</option>
             <option value="residencial">Residencial</option>
             <option value="comercial">Comercial</option>
             <option value="industrial">Industrial</option>
             <option value="turistico">Turístico</option>
-          </select>
+        </select>
         </div>
 
         <div class="filter-group search-group">
-          <label for="search-input">Buscar Proyecto:</label>
-          <input type="text" id="search-input" placeholder="Buscar proyectos...">
+        <label for="search-input">Buscar Proyecto</label>
+        <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Buscar proyectos..."
+        >
         </div>
 
-      </div>
+    </div>
     </section>
-
-    <!-- Lista -->
-    <section class="items-section">
-      <div class="items-header">
-        <h2>📋 Lista de Proyectos</h2>
-      </div>
-
-      <div id="item-list" class="item-list">
-        <!-- Se renderiza con JavaScript -->
-      </div>
-
-      <div id="empty-state" class="empty-state">
-        <p>📭 No hay proyectos registrados</p>
-        <p class="empty-state-hint">Crea tu primer proyecto arriba</p>
-      </div>
-    </section>
-
-    <!-- Estadísticas -->
-    <section class="detailed-stats">
-      <h3>📊 Estadísticas de Inversión</h3>
-      <div id="stats-details" class="stats-grid">
-        <!-- JS -->
-      </div>
-    </section>
-
   </div>
 
-  <script src="starter/script.js"></script>
+  <script src="./scripts.js"></script>
 </body>
 </html>
