@@ -61,7 +61,7 @@ const loadItems = () => {
 
 /**
  * Guarda todos los proyectos en el navegador
- * @param {Array} itemsToSave - el array con todos los proyectos
+ * @param {Array} it3emsToSave - el array con todos los proyectos
  */
 const saveItems = itemsToSave => {
   // Convierto el array a texto para poder guardarlo
