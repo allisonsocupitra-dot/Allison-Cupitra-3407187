@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🏢 Plataforma de Crowdfunding Inmobiliario</title>
+    <link rel="stylesheet" href="../starte/styles_1.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      
+      <!-- Header -->
+      <header class="header">
+        <h1>🏢 Crowdfunding Inmobiliario</h1>
+        <p class="subtitle">Invierte en proyectos inmobiliarios de forma colaborativa</p>
+      </header>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="projects">
+          🏗️ Proyectos
+        </button>
+        <button class="tab-btn" data-tab="investors">
+          👤 Inversionistas
+        </button>
+        <button class="tab-btn" data-tab="investments">
+          💳 Inversiones
+        </button>
+        <button class="tab-btn" data-tab="stats">
+          📈 Métricas
+        </button>
+      </nav>
+
+      <!-- Tab Content -->
+      <main class="tab-content">
+        
+        <!-- Projects Tab -->
+        <section id="projects" class="tab-panel active">
+          <div class="panel-header">
+            <h2>🏗️ Catálogo de Proyectos</h2>
+            <div class="actions">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Buscar proyecto..."
+              />
+
+              <select id="filter-type">
+                <option value="all">Todos los tipos</option>
+                <option value="Residencial">Residencial</option>
+                <option value="Comercial">Comercial</option>
+                <option value="Mixto">Mixto</option>
+              </select>
+
+              <select id="filter-status">
+                <option value="all">Todos</option>
+                <option value="active">Activo</option>
+                <option value="inactive">Finalizado</option>
+              </select>
+
+              <button id="add-item-btn" class="btn btn-primary">
+                + Nuevo Proyecto
+              </button>
+            </div>
+          </div>
+
+          <div id="item-list" class="items-grid"></div>
+
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <p>📭 No hay proyectos disponibles</p>
+            <p class="hint">Agrega tu primer proyecto inmobiliario</p>
+          </div>
+        </section>
+
+        <!-- Investors Tab -->
+        <section id="investors" class="tab-panel">
+          <div class="panel-header">
+            <h2>👤 Inversionistas</h2>
+            <div class="actions">
+              <input
+                type="text"
+                id="search-users"
+                placeholder="Buscar inversionista..."
+              />
+
+              <select id="filter-role">
+                <option value="all">Todos los roles</option>
+                <option value="Investor">Inversionista</option>
+                <option value="Admin">Administrador</option>
+              </select>
+
+              <button id="add-user-btn" class="btn btn-primary">
+                + Agregar Inversionista
+              </button>
+            </div>
+          </div>
+
+          <div id="user-list" class="users-grid"></div>
+        </section>
+
+        <!-- Investments Tab -->
+        <section id="investments" class="tab-panel">
+          <div class="panel-header">
+            <h2>💳 Historial de Inversiones</h2>
+          </div>
+          <div id="transaction-list" class="transactions-list"></div>
+        </section>
+
+        <!-- Stats Tab -->
+        <section id="stats" class="tab-panel">
+          <div class="panel-header">
+            <h2>📈 Métricas de la Plataforma</h2>
+          </div>
+
+          <div id="stats-container" class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-value" id="stat-total">0</span>
+              <span class="stat-label">Total Proyectos</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-active">0</span>
+              <span class="stat-label">Proyectos Activos</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-inactive">0</span>
+              <span class="stat-label">Proyectos Finalizados</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-users">0</span>
+              <span class="stat-label">Inversionistas</span>
+            </div>
+          </div>
+
+          <div id="stats-details" class="stats-details"></div>
+        </section>
+      </main>
+
+      <!-- Modal Proyecto -->
+      <div id="item-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title">Nuevo Proyecto</h3>
+            <button class="close-btn" id="close-modal">&times;</button>
+          </div>
+
+          <form id="item-form" class="modal-form">
+            <div class="form-group">
+              <label for="item-type">Tipo de Proyecto</label>
+              <select id="item-type" required>
+                <option value="">Selecciona un tipo</option>
+                <option value="Residencial">Residencial</option>
+                <option value="Comercial">Comercial</option>
+                <option value="Mixto">Mixto</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="item-name">Nombre del Proyecto *</label>
+              <input type="text" id="item-name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="item-location">Ubicación *</label>
+              <input type="text" id="item-location" required />
+            </div>
+
+            <div class="form-group">
+              <label for="project-goal">Meta de Financiamiento ($) *</label>
+              <input type="number" id="project-goal" required />
+            </div>
+
+            <div class="form-group">
+              <label for="project-return">Rentabilidad Estimada (%) *</label>
+              <input type="number" id="project-return" required />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Guardar</button>
+              <button type="button" class="btn btn-secondary" id="cancel-btn">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal Inversionista -->
+      <div id="user-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Agregar Inversionista</h3>
+            <button class="close-btn" id="close-user-modal">&times;</button>
+          </div>
+
+          <form id="user-form" class="modal-form">
+            <div class="form-group">
+              <label for="user-role">Rol</label>
+              <select id="user-role" required>
+                <option value="">Selecciona un rol</option>
+                <option value="Investor">Inversionista</option>
+                <option value="Admin">Administrador</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="user-name">Nombre *</label>
+              <input type="text" id="user-name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="user-email">Email *</label>
+              <input type="email" id="user-email" required />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Guardar</button>
+              <button type="button" class="btn btn-secondary" id="cancel-user-btn">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="../solution/script_3.js"></script>
+  </body>
+</html>
